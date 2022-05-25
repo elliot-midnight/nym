@@ -2,6 +2,7 @@ import React, { FC, useContext, useState } from 'react';
 import { Box, Button, Link, Paper, Stack, Typography } from '@mui/material';
 import { DelegationWithEverything } from '@nymproject/types';
 import { ClientContext } from 'src/context/main';
+import { DelegationList } from 'src/components/Delegation/DelegationList';
 import { RewardsSummary } from '../../components/Rewards/RewardsSummary';
 import { useDelegationContext, DelegationContextProvider } from '../../context/delegations';
 import { RewardsContextProvider, useRewardsContext } from '../../context/rewards';
@@ -10,7 +11,6 @@ import { UndelegateModal } from '../../components/Delegation/UndelegateModal';
 import { DelegationListItemActions } from '../../components/Delegation/DelegationActions';
 import { RedeemModal } from '../../components/Rewards/RedeemModal';
 import { DelegationModal, DelegationModalProps } from '../../components/Delegation/DelegationModal';
-import { DelegationList } from 'src/components/Delegation/DelegationList';
 
 const explorerUrl = 'https://sandbox-explorer.nymtech.net';
 
@@ -82,6 +82,8 @@ export const Delegation: FC = () => {
         total_delegation: { amount: '0', denom: 'NYM' },
         pledge_amount: { amount: '0', denom: 'NYM' },
         avg_uptime_percent: 0.1,
+        history: [],
+        pending_events: [],
       });
       setConfirmationModalProps({
         status: 'success',

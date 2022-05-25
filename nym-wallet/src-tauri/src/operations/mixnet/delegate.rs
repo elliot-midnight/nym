@@ -94,8 +94,7 @@ impl TryInto<MixNodeExtras> for MixNodeBond {
 
 struct DelegationWithHistory {
   pub delegation: Delegation,
-  pub amount_sum: Uint128,
-  pub denom: String,
+  pub amount_sum: MajorCurrencyAmount,
   pub history: Vec<DelegationRecord>,
 }
 
@@ -118,24 +117,21 @@ pub async fn get_all_mix_delegations(
       .to_rfc3339();
     let amount: MajorCurrencyAmount = d.amount.clone().try_into()?;
     let record = DelegationRecord {
-      amount,
+      amount: amount.clone(),
       block_height: d.block_height,
       delegated_on_iso_datetime,
     };
 
-    let amount = d.amount.amount;
-    let denom = d.amount.denom.to_string();
     let entry = map
       .entry(d.node_identity.clone())
       .or_insert(DelegationWithHistory {
         delegation: d.try_into()?,
         history: vec![],
-        denom,
-        amount_sum: Uint128::zero(),
+        amount_sum: MajorCurrencyAmount::zero(&amount.denom),
       });
 
     entry.history.push(record);
-    entry.amount_sum += amount;
+    entry.amount_sum = entry.amount_sum.clone() + amount;
   }
 
   let mut with_everything: Vec<DelegationWithEverything> = vec![];
@@ -198,7 +194,7 @@ pub async fn get_all_mix_delegations(
     with_everything.push(DelegationWithEverything {
       owner: owner.to_string(),
       node_identity: node_identity.to_string(),
-      amount: MajorCurrencyAmount::from_minor_uint128_and_denom(item.1.amount_sum, &item.1.denom)?,
+      amount: item.1.amount_sum,
       block_height,
       proxy: proxy.clone(),
       delegated_on_iso_datetime,

@@ -20,6 +20,8 @@ let mockDelegations: DelegationWithEverything[] = [
     avg_uptime_percent: 0.5,
     total_delegation: { amount: '0', denom: 'NYM' },
     pledge_amount: { amount: '0', denom: 'NYM' },
+    pending_events: [],
+    history: [],
   },
   {
     node_identity: 'DT8S942S8AQs2zKHS9SVo1GyHmuca3pfL2uLhLksJ3D8',
@@ -34,6 +36,8 @@ let mockDelegations: DelegationWithEverything[] = [
     avg_uptime_percent: 0.1,
     total_delegation: { amount: '0', denom: 'NYM' },
     pledge_amount: { amount: '0', denom: 'NYM' },
+    pending_events: [],
+    history: [],
   },
 ];
 
