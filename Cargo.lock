@@ -218,9 +218,9 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
 name = "base64ct"
-version = "1.5.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dea908e7347a8c64e378c17e30ef880ad73e3b4498346b055c2c00ea342f3179"
+checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
 
 [[package]]
 name = "binascii"
@@ -6051,6 +6051,10 @@ dependencies = [
  "thiserror",
  "ts-rs-macros",
 ]
+
+[[package]]
+name = "ts-rs-cli"
+version = "0.1.0"
 
 [[package]]
 name = "ts-rs-macros"

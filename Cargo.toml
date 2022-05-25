@@ -63,6 +63,7 @@ members = [
     "service-providers/network-requester",
     "validator-api",
     "validator-api/validator-api-requests",
+    "tools/ts-rs-cli"
 ]
 
 default-members = [

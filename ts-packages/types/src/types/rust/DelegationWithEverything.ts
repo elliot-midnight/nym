@@ -1,3 +1,5 @@
+import type { DelegationEvent } from './DelegationEvent';
+import type { DelegationRecord } from './DelegationRecord';
 import type { MajorCurrencyAmount } from './Currency';
 
 export interface DelegationWithEverything {
@@ -13,4 +15,6 @@ export interface DelegationWithEverything {
   stake_saturation: number | null;
   proxy: string | null;
   accumulated_rewards: MajorCurrencyAmount | null;
+  pending_events: Array<DelegationEvent>;
+  history: Array<DelegationRecord>;
 }

@@ -50,6 +50,18 @@ impl TryFrom<MixnetContractDelegation> for Delegation {
 #[cfg_attr(feature = "generate-ts", derive(ts_rs::TS))]
 #[cfg_attr(
     feature = "generate-ts",
+    ts(export_to = "ts-packages/types/src/types/rust/DelegationRecord.ts")
+)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, JsonSchema)]
+pub struct DelegationRecord {
+    pub amount: MajorCurrencyAmount,
+    pub block_height: u64,
+    pub delegated_on_iso_datetime: String,
+}
+
+#[cfg_attr(feature = "generate-ts", derive(ts_rs::TS))]
+#[cfg_attr(
+    feature = "generate-ts",
     ts(export_to = "ts-packages/types/src/types/rust/DelegationWithEverything.ts")
 )]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, JsonSchema)]
@@ -64,8 +76,10 @@ pub struct DelegationWithEverything {
     pub profit_margin_percent: Option<u8>,
     pub avg_uptime_percent: Option<u8>,
     pub stake_saturation: Option<f32>,
-    pub proxy: Option<String>, // proxy address used to delegate the funds on behalf of anouther address
+    pub proxy: Option<String>,
     pub accumulated_rewards: Option<MajorCurrencyAmount>,
+    pub pending_events: Vec<DelegationEvent>,
+    pub history: Vec<DelegationRecord>,
 }
 
 #[cfg_attr(feature = "generate-ts", derive(ts_rs::TS))]
@@ -73,7 +87,7 @@ pub struct DelegationWithEverything {
     feature = "generate-ts",
     ts(export_to = "ts-packages/types/src/types/rust/DelegationResult.ts")
 )]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema, Clone, PartialEq, Debug)]
 pub struct DelegationResult {
     source_address: String,
     target_address: String,
@@ -112,7 +126,7 @@ impl TryFrom<MixnetContractDelegation> for DelegationResult {
     feature = "generate-ts",
     ts(export_to = "ts-packages/types/src/types/rust/DelegationEvent.ts")
 )]
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, PartialEq, JsonSchema, Debug)]
 pub enum DelegationEvent {
     Delegate(DelegationResult),
     Undelegate(PendingUndelegate),
@@ -140,7 +154,7 @@ impl TryFrom<ContractDelegationEvent> for DelegationEvent {
     feature = "generate-ts",
     ts(export_to = "ts-packages/types/src/types/rust/PendingUndelegate.ts")
 )]
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, PartialEq, JsonSchema, Clone, Debug)]
 pub struct PendingUndelegate {
     mix_identity: String,
     delegate: String,

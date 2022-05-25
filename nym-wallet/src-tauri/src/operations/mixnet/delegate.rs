@@ -5,10 +5,11 @@ use cosmwasm_std::{Coin as CosmWasmCoin, Uint128};
 use mixnet_contract_common::{IdentityKey, MixNodeBond};
 use nym_types::currency::{CurrencyDenom, MajorCurrencyAmount};
 use nym_types::delegation::{
-  from_contract_delegation_events, Delegation, DelegationEvent, DelegationResult,
+  from_contract_delegation_events, Delegation, DelegationEvent, DelegationRecord, DelegationResult,
   DelegationWithEverything, DelegationsSummaryResponse,
 };
 use nym_types::error::TypesError;
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -91,6 +92,13 @@ impl TryInto<MixNodeExtras> for MixNodeBond {
   }
 }
 
+struct DelegationWithHistory {
+  pub delegation: Delegation,
+  pub amount_sum: Uint128,
+  pub denom: String,
+  pub history: Vec<DelegationRecord>,
+}
+
 #[tauri::command]
 pub async fn get_all_mix_delegations(
   state: tauri::State<'_, Arc<RwLock<State>>>,
@@ -100,21 +108,56 @@ pub async fn get_all_mix_delegations(
     .await?
     .delegations;
 
-  let delegations = delegations
-    .into_iter()
-    .map(|d| d.try_into())
-    .collect::<Result<Vec<Delegation>, TypesError>>()?;
+  let mut map: HashMap<String, DelegationWithHistory> = HashMap::new();
+
+  for d in delegations {
+    // create record of delegation
+    let delegated_on_iso_datetime = nymd_client!(state)
+      .get_block_timestamp(Some(d.block_height as u32))
+      .await?
+      .to_rfc3339();
+    let amount: MajorCurrencyAmount = d.amount.clone().try_into()?;
+    let record = DelegationRecord {
+      amount,
+      block_height: d.block_height,
+      delegated_on_iso_datetime,
+    };
+
+    let amount = d.amount.amount;
+    let denom = d.amount.denom.to_string();
+    let entry = map
+      .entry(d.node_identity.clone())
+      .or_insert(DelegationWithHistory {
+        delegation: d.try_into()?,
+        history: vec![],
+        denom,
+        amount_sum: Uint128::zero(),
+      });
+
+    entry.history.push(record);
+    entry.amount_sum += amount;
+  }
 
   let mut with_everything: Vec<DelegationWithEverything> = vec![];
 
-  for d in delegations {
+  for item in map {
+    let d = item.1.delegation;
+    let history = item.1.history;
     let Delegation {
       owner,
       node_identity,
-      amount,
+      amount: _,
       block_height,
       proxy,
     } = d;
+
+    let pending_events = nymd_client!(state)
+      .get_pending_delegation_events(owner.clone(), proxy.clone())
+      .await?;
+    let pending_events = pending_events
+      .into_iter()
+      .map(|e| e.try_into())
+      .collect::<Result<Vec<DelegationEvent>, TypesError>>()?;
 
     let mixnode_response = nymd_client!(state)
       .get_mixnodes_paged(Some(node_identity.to_string()), Some(1))
@@ -154,8 +197,8 @@ pub async fn get_all_mix_delegations(
 
     with_everything.push(DelegationWithEverything {
       owner: owner.to_string(),
-      node_identity: owner.to_string(),
-      amount: amount.clone(),
+      node_identity: node_identity.to_string(),
+      amount: MajorCurrencyAmount::from_minor_uint128_and_denom(item.1.amount_sum, &item.1.denom)?,
       block_height,
       proxy: proxy.clone(),
       delegated_on_iso_datetime,
@@ -165,6 +208,8 @@ pub async fn get_all_mix_delegations(
       total_delegation: extras.as_ref().map(|e| e.total_delegation.clone()),
       pledge_amount: extras.as_ref().map(|e| e.pledge_amount.clone()),
       avg_uptime_percent,
+      pending_events,
+      history,
     })
   }
 
