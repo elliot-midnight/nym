@@ -30,19 +30,24 @@ export const Undelegate = () => {
 
   const refresh = async () => {
     const mixnodeDelegations = await getReverseMixDelegations();
-    const pendingEvents = await getPendingDelegations();
-    const pendingVestingEvents = await getPendingVestingDelegations();
-    const pendingUndelegationEvents = [...pendingEvents, ...pendingVestingEvents]
-      .filter((evt): evt is { Undelegate: PendingUndelegate } => 'Undelegate' in evt)
-      .map((e) => ({ ...e.Undelegate }));
-    const pendingDelegationEvents = [...pendingEvents, ...pendingVestingEvents]
-      .filter((evt): evt is { Delegate: DelegationResult } => 'Delegate' in evt)
-      .map((e) => ({ ...e.Delegate }));
+
+    // Temporarily comment out to fix breaking type change
+
+    // const pendingEvents = await getPendingDelegations();
+    // const pendingVestingEvents = await getPendingVestingDelegations();
+    // const pendingUndelegationEvents = [...pendingEvents, ...pendingVestingEvents]
+    //   .filter((evt): evt is { Undelegate: PendingUndelegate } => 'Undelegate' in evt)
+    //   .map((e) => ({ ...e.Undelegate }));
+    // const pendingDelegationEvents = [...pendingEvents, ...pendingVestingEvents]
+    //   .filter((evt): evt is { Delegate: DelegationResult } => 'Delegate' in evt)
+    //   .map((e) => ({ ...e.Delegate }));
     const epoch = await getCurrentEpoch();
 
     setCurrentEndEpoch(epoch.end);
-    setPendingUndelegations(pendingUndelegationEvents);
-    setPendingDelegations(pendingDelegationEvents);
+
+    // Temporarily comment out to fix breaking type change
+    // setPendingUndelegations(pendingUndelegationEvents);
+    // setPendingDelegations(pendingDelegationEvents);
     setPagesDelegations({
       ...mixnodeDelegations,
       delegations: removeObjectDuplicates(mixnodeDelegations.delegations, 'node_identity'),
