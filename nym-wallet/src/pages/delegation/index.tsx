@@ -82,8 +82,8 @@ export const Delegation: FC = () => {
         total_delegation: { amount: '0', denom: 'NYM' },
         pledge_amount: { amount: '0', denom: 'NYM' },
         avg_uptime_percent: 0.1,
-        history: [],
         pending_events: [],
+        history: [],
       });
       setConfirmationModalProps({
         status: 'success',

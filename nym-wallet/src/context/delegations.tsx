@@ -1,5 +1,5 @@
 import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { getMixNodeDelegationsForCurrentAccount } from 'src/requests/delegation';
+import { getDelegationSummary } from 'src/requests/delegation';
 import type { Network } from 'src/types';
 import { DelegationWithEverything } from '@nymproject/types';
 
@@ -60,9 +60,9 @@ export const DelegationContextProvider: FC<{
 
   const refresh = useCallback(async () => {
     try {
-      getMixNodeDelegationsForCurrentAccount().then(setDelegations);
-
-      setTotalDelegations('500 NYM');
+      const data = await getDelegationSummary();
+      setDelegations(data.delegations);
+      setTotalDelegations(`${data.total_delegations.amount} ${data.total_delegations.denom}`);
     } catch (e) {
       setError((e as Error).message);
     }
