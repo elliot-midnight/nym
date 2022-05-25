@@ -107,6 +107,13 @@ pub async fn get_all_mix_delegations(
     .await?
     .delegations;
 
+  let pending_events_for_account = nymd_client!(state)
+    .get_pending_delegation_events(nymd_client!(state).address().to_string(), None)
+    .await?
+    .into_iter()
+    .map(|e| e.try_into())
+    .collect::<Result<Vec<DelegationEvent>, TypesError>>()?;
+
   let mut map: HashMap<String, DelegationWithHistory> = HashMap::new();
 
   for d in delegations {
@@ -147,19 +154,20 @@ pub async fn get_all_mix_delegations(
       proxy,
     } = d;
 
-    let pending_events = nymd_client!(state)
-      .get_pending_delegation_events(owner.clone(), proxy.clone())
-      .await?;
-    let pending_events = pending_events
-      .into_iter()
-      .map(|e| e.try_into())
-      .collect::<Result<Vec<DelegationEvent>, TypesError>>()?;
+    let pending_events = pending_events_for_account
+      .iter()
+      .filter(|e| e.node_identity == node_identity)
+      .cloned()
+      .collect::<Vec<DelegationEvent>>();
 
     let mixnode_response = nymd_client!(state)
-      .get_mixnodes_paged(Some(node_identity.to_string()), Some(1))
+      .get_mixnodes_paged(Some(node_identity.to_string()), None)
       .await?;
 
     let mixnode = mixnode_response.nodes.first();
+
+    println!("{} ---- {:?}", node_identity, mixnode);
+    println!();
 
     let extras: Option<MixNodeExtras> = match mixnode {
       Some(m) => MixNodeExtras::from_mixnode_bond(m).ok(),

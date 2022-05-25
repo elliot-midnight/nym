@@ -139,11 +139,11 @@ pub enum DelegationEventKind {
 )]
 #[derive(Clone, Deserialize, Serialize, PartialEq, JsonSchema, Debug)]
 pub struct DelegationEvent {
-    kind: DelegationEventKind,
-    node_identity: String,
-    address: String,
-    amount: Option<MajorCurrencyAmount>,
-    block_height: u64,
+    pub kind: DelegationEventKind,
+    pub node_identity: String,
+    pub address: String,
+    pub amount: Option<MajorCurrencyAmount>,
+    pub block_height: u64,
 }
 
 impl TryFrom<ContractDelegationEvent> for DelegationEvent {
