@@ -1,5 +1,9 @@
 import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+<<<<<<< HEAD
 import { getDelegationSummary } from 'src/requests/delegation';
+=======
+import { getDelegationSummary, getMixNodeDelegationsForCurrentAccount } from 'src/requests/delegation';
+>>>>>>> 10ad612d (set total delegations)
 import type { Network } from 'src/types';
 import { DelegationWithEverything } from '@nymproject/types';
 
@@ -35,7 +39,6 @@ export const DelegationContext = createContext<TDelegationContext>({
 export const DelegationContextProvider: FC<{
   network?: Network;
 }> = ({ network, children }) => {
-  const [currentNetwork, setCurrentNetwork] = useState<undefined | Network>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [delegations, setDelegations] = useState<undefined | DelegationWithEverything[]>();
@@ -59,6 +62,7 @@ export const DelegationContextProvider: FC<{
   };
 
   const refresh = useCallback(async () => {
+    console.log('called');
     try {
       const data = await getDelegationSummary();
       setDelegations(data.delegations);
@@ -70,12 +74,9 @@ export const DelegationContextProvider: FC<{
   }, [network]);
 
   useEffect(() => {
-    if (currentNetwork !== network) {
-      // reset state and refresh
-      resetState();
-      setCurrentNetwork(network);
-      refresh();
-    }
+    // reset state and refresh
+    resetState();
+    refresh();
   }, [network]);
 
   const memoizedValue = useMemo(
@@ -89,7 +90,7 @@ export const DelegationContextProvider: FC<{
       updateDelegation,
       undelegate,
     }),
-    [isLoading, error, delegations],
+    [isLoading, error, delegations, totalDelegations],
   );
 
   return <DelegationContext.Provider value={memoizedValue}>{children}</DelegationContext.Provider>;
