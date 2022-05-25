@@ -6,6 +6,7 @@ type TRewardsContext = {
   isLoading: boolean;
   error?: string;
   totalRewards?: string;
+  refresh: () => Promise<void>;
   redeemRewards: (mixnodeAddress: string) => Promise<TRewardsTransaction>;
   redeemAllRewards: () => Promise<TRewardsTransaction>;
 };
@@ -16,6 +17,7 @@ export type TRewardsTransaction = {
 
 export const RewardsContext = createContext<TRewardsContext>({
   isLoading: true,
+  refresh: async () => undefined,
   redeemRewards: async () => {
     throw new Error('Not implemented');
   },
@@ -27,7 +29,7 @@ export const RewardsContext = createContext<TRewardsContext>({
 export const RewardsContextProvider: FC<{
   network?: Network;
 }> = ({ network, children }) => {
-  const { isLoading, totalRewards } = useDelegationContext();
+  const { isLoading, totalRewards, refresh } = useDelegationContext();
   const [currentNetwork, setCurrentNetwork] = useState<undefined | Network>();
   const [error, setError] = useState<string>();
 
@@ -48,6 +50,7 @@ export const RewardsContextProvider: FC<{
       isLoading,
       error,
       totalRewards,
+      refresh,
       redeemRewards: async () => {
         throw new Error('Not implemented');
       },

@@ -1,4 +1,4 @@
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { Box, Button, Link, Paper, Stack, Typography } from '@mui/material';
 import { DelegationWithEverything } from '@nymproject/types';
 import { ClientContext } from 'src/context/main';
@@ -32,7 +32,14 @@ export const Delegation: FC = () => {
     addDelegation,
     updateDelegation,
     undelegate,
+    refresh,
   } = useDelegationContext();
+
+  // Refresh the rewards and delegations periodically when page is mounted
+  useEffect(() => {
+    const timer = setInterval(refresh, 5 * 60 * 1000); // every 5 minutes
+    return () => clearInterval(timer);
+  }, []);
 
   // TODO: replace with real operation
   const getWalletBalance = async () => '1200 NYM';
