@@ -1,9 +1,5 @@
 import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-<<<<<<< HEAD
 import { getDelegationSummary } from 'src/requests/delegation';
-=======
-import { getDelegationSummary, getMixNodeDelegationsForCurrentAccount } from 'src/requests/delegation';
->>>>>>> 10ad612d (set total delegations)
 import type { Network } from 'src/types';
 import { DelegationWithEverything } from '@nymproject/types';
 
