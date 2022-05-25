@@ -18,7 +18,7 @@ use validator_client::nymd::{CosmosCoin, GasPrice};
     feature = "generate-ts",
     ts(export_to = "ts-packages/types/src/types/rust/CurrencyDenom.ts")
 )]
-#[cfg_attr(test, ts(rename_all = "UPPERCASE"))]
+#[cfg_attr(feature = "generate-ts", ts(rename_all = "UPPERCASE"))]
 #[derive(
     Display,
     Serialize,
@@ -103,7 +103,10 @@ impl MajorCurrencyAmount {
         amount_minor: Uint128,
         denom_minor: &str,
     ) -> Result<MajorCurrencyAmount, TypesError> {
-        MajorCurrencyAmount::from_minor_decimal_and_denom(Decimal::new(amount_minor), denom_minor)
+        MajorCurrencyAmount::from_minor_decimal_and_denom(
+            Decimal::from_atomics(amount_minor, 0)?,
+            denom_minor,
+        )
     }
 
     pub fn from_minor_decimal_and_denom(
@@ -263,11 +266,15 @@ impl TryFrom<CosmWasmCoin> for MajorCurrencyAmount {
     type Error = TypesError;
 
     fn try_from(c: CosmWasmCoin) -> Result<Self, Self::Error> {
-        // TODO: uuuurgh - seems like string is the only route, because Decimal::new(c.amount) divides by 1_000_000
-        MajorCurrencyAmount::from_decimal_and_denom(
-            Decimal::from_str(&c.amount.to_string())?,
-            c.denom,
-        )
+        // note: there are always 0 decimals of precision because:
+        // - for major values, only whole values can be represented, e.g. 1 NYM, 1000 NYM
+        // - for minor values, again only whole values are represented, e.g. 1 UNYM, 1000 UNYM
+        match Decimal::from_atomics(c.amount, 0) {
+            Ok(amount) => Ok(MajorCurrencyAmount::from_decimal_and_denom(
+                amount, c.denom,
+            )?),
+            Err(_) => Err(TypesError::InvalidAmount(c.to_string())),
+        }
     }
 }
 
@@ -397,7 +404,12 @@ mod test {
             amount: Uint128::from(1u64),
             denom: "unym".to_string(),
         };
-        println!("amount = {}", CosmWasmDecimal::new(coin.amount.clone()));
+        println!(
+            "from_atomics = {}",
+            CosmWasmDecimal::from_atomics(coin.amount.clone(), 6)
+                .unwrap()
+                .to_string()
+        );
         let c: MajorCurrencyAmount = coin.try_into().unwrap();
         assert_eq!(c, MajorCurrencyAmount::new("0.000001", CurrencyDenom::Nym));
     }
@@ -408,7 +420,28 @@ mod test {
             amount: Uint128::from(1_000_000u64),
             denom: "unym".to_string(),
         };
-        println!("amount = {}", CosmWasmDecimal::new(coin.amount.clone()));
+        println!(
+            "from_atomics = {:?}",
+            CosmWasmDecimal::from_atomics(coin.amount.clone(), 6)
+                .unwrap()
+                .to_string()
+        );
+        let c: MajorCurrencyAmount = coin.try_into().unwrap();
+        assert_eq!(c, MajorCurrencyAmount::new("1", CurrencyDenom::Nym));
+    }
+
+    #[test]
+    fn major_cosmwasm_coin_to_major_currency() {
+        let coin = CosmWasmCoin {
+            amount: Uint128::from(1u64),
+            denom: "nym".to_string(),
+        };
+        println!(
+            "from_atomics = {:?}",
+            CosmWasmDecimal::from_atomics(coin.amount.clone(), 6)
+                .unwrap()
+                .to_string()
+        );
         let c: MajorCurrencyAmount = coin.try_into().unwrap();
         assert_eq!(c, MajorCurrencyAmount::new("1", CurrencyDenom::Nym));
     }

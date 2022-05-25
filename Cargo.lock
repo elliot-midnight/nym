@@ -3298,6 +3298,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "nym-wallet-types"
+version = "1.0.0"
+dependencies = [
+ "config",
+ "cosmrs 0.4.1 (git+https://github.com/nymtech/cosmos-rust?branch=bugfix/account-id-length-validation)",
+ "cosmwasm-std",
+ "mixnet-contract-common",
+ "nym-types",
+ "serde",
+ "serde_json",
+ "strum",
+ "ts-rs",
+ "validator-client",
+ "vesting-contract",
+ "vesting-contract-common",
+]
+
+[[package]]
 name = "nymcoconut"
 version = "0.5.0"
 dependencies = [
@@ -6055,6 +6073,17 @@ dependencies = [
 [[package]]
 name = "ts-rs-cli"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "mixnet-contract-common",
+ "nym-types",
+ "nym-wallet-types",
+ "ts-rs",
+ "validator-api-requests",
+ "validator-client",
+ "vesting-contract-common",
+ "walkdir",
+]
 
 [[package]]
 name = "ts-rs-macros"

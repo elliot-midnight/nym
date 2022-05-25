@@ -46,6 +46,11 @@ pub enum TypesError {
         #[from]
         source: reqwest::Error,
     },
+    #[error("{source}")]
+    DecimalRangeExceeded {
+        #[from]
+        source: cosmwasm_std::DecimalRangeExceeded,
+    },
     #[error("{0} is not a valid amount string")]
     InvalidAmount(String),
     #[error("{0} is not a valid denomination string")]

@@ -1,11 +1,11 @@
 import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Network } from 'src/types';
+import { useDelegationContext } from './delegations';
 
 type TRewardsContext = {
   isLoading: boolean;
   error?: string;
   totalRewards?: string;
-  refresh: () => Promise<void>;
   redeemRewards: (mixnodeAddress: string) => Promise<TRewardsTransaction>;
   redeemAllRewards: () => Promise<TRewardsTransaction>;
 };
@@ -16,7 +16,6 @@ export type TRewardsTransaction = {
 
 export const RewardsContext = createContext<TRewardsContext>({
   isLoading: true,
-  refresh: async () => undefined,
   redeemRewards: async () => {
     throw new Error('Not implemented');
   },
@@ -28,34 +27,19 @@ export const RewardsContext = createContext<TRewardsContext>({
 export const RewardsContextProvider: FC<{
   network?: Network;
 }> = ({ network, children }) => {
+  const { isLoading, totalRewards } = useDelegationContext();
   const [currentNetwork, setCurrentNetwork] = useState<undefined | Network>();
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>();
-  const [totalRewards, setTotalRewards] = useState<undefined | string>();
-
-  const getTotalRewards = async () => {
-    setTotalRewards('500 NYM');
-  };
 
   const resetState = async () => {
-    setIsLoading(true);
     setError(undefined);
-    setTotalRewards(undefined);
   };
-
-  // TODO: implement
-  const refresh = useCallback(async () => {
-    await getTotalRewards();
-    setIsLoading(false);
-    // TODO: do work
-  }, [network]);
 
   useEffect(() => {
     if (currentNetwork !== network) {
       // reset state and refresh
       resetState();
       setCurrentNetwork(network);
-      refresh();
     }
   }, [network]);
 
@@ -64,7 +48,6 @@ export const RewardsContextProvider: FC<{
       isLoading,
       error,
       totalRewards,
-      refresh,
       redeemRewards: async () => {
         throw new Error('Not implemented');
       },

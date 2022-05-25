@@ -157,7 +157,7 @@ impl TryFrom<ContractDelegationEvent> for DelegationEvent {
                     kind: DelegationEventKind::Delegate,
                     block_height: delegation.block_height,
                     address: delegation.owner.into_string(),
-                    node_identity: delegation.node_identity.to_string(),
+                    node_identity: delegation.node_identity,
                     amount: Some(amount),
                 })
             }
@@ -165,7 +165,7 @@ impl TryFrom<ContractDelegationEvent> for DelegationEvent {
                 kind: DelegationEventKind::Delegate,
                 block_height: pending_undelegate.block_height(),
                 address: pending_undelegate.delegate().into_string(),
-                node_identity: pending_undelegate.mix_identity().to_string(),
+                node_identity: pending_undelegate.mix_identity(),
                 amount: None,
             }),
         }

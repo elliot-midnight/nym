@@ -16,8 +16,8 @@ import { visuallyHidden } from '@mui/utils';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { CopyToClipboard } from '@nymproject/react/clipboard/CopyToClipboard';
 import { DelegationWithEverything } from '@nymproject/types';
-import { DelegationListItemActions, DelegationsActionsMenu } from './DelegationActions';
 import { format } from 'date-fns';
+import { DelegationListItemActions, DelegationsActionsMenu } from './DelegationActions';
 
 type Order = 'asc' | 'desc';
 

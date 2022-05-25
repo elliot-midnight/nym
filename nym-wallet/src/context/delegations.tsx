@@ -8,6 +8,7 @@ export type TDelegationContext = {
   error?: string;
   delegations?: DelegationWithEverything[];
   totalDelegations?: string;
+  totalRewards?: string;
   refresh: () => Promise<void>;
   addDelegation: (newDelegation: DelegationWithEverything) => Promise<TDelegationTransaction>;
   updateDelegation: (newDelegation: DelegationWithEverything) => Promise<TDelegationTransaction>;
@@ -39,6 +40,7 @@ export const DelegationContextProvider: FC<{
   const [error, setError] = useState<string>();
   const [delegations, setDelegations] = useState<undefined | DelegationWithEverything[]>();
   const [totalDelegations, setTotalDelegations] = useState<undefined | string>();
+  const [totalRewards, setTotalRewards] = useState<undefined | string>();
 
   const addDelegation = async (): Promise<TDelegationTransaction> => {
     throw new Error('Not implemented');
@@ -54,15 +56,16 @@ export const DelegationContextProvider: FC<{
     setIsLoading(true);
     setError(undefined);
     setTotalDelegations(undefined);
+    setTotalRewards(undefined);
     setDelegations([]);
   };
 
   const refresh = useCallback(async () => {
-    console.log('called');
     try {
       const data = await getDelegationSummary();
       setDelegations(data.delegations);
       setTotalDelegations(`${data.total_delegations.amount} ${data.total_delegations.denom}`);
+      setTotalRewards(`${data.total_rewards.amount} ${data.total_rewards.denom}`);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -81,6 +84,7 @@ export const DelegationContextProvider: FC<{
       error,
       delegations,
       totalDelegations,
+      totalRewards,
       refresh,
       addDelegation,
       updateDelegation,
