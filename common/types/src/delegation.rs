@@ -124,12 +124,26 @@ impl TryFrom<MixnetContractDelegation> for DelegationResult {
 #[cfg_attr(feature = "generate-ts", derive(ts_rs::TS))]
 #[cfg_attr(
     feature = "generate-ts",
+    ts(export_to = "ts-packages/types/src/types/rust/DelegationEventKind.ts")
+)]
+#[derive(Clone, Deserialize, Serialize, PartialEq, JsonSchema, Debug)]
+pub enum DelegationEventKind {
+    Delegate,
+    Undelegate,
+}
+
+#[cfg_attr(feature = "generate-ts", derive(ts_rs::TS))]
+#[cfg_attr(
+    feature = "generate-ts",
     ts(export_to = "ts-packages/types/src/types/rust/DelegationEvent.ts")
 )]
 #[derive(Clone, Deserialize, Serialize, PartialEq, JsonSchema, Debug)]
-pub enum DelegationEvent {
-    Delegate(DelegationResult),
-    Undelegate(PendingUndelegate),
+pub struct DelegationEvent {
+    kind: DelegationEventKind,
+    node_identity: String,
+    address: String,
+    amount: Option<MajorCurrencyAmount>,
+    block_height: u64,
 }
 
 impl TryFrom<ContractDelegationEvent> for DelegationEvent {
@@ -138,13 +152,22 @@ impl TryFrom<ContractDelegationEvent> for DelegationEvent {
     fn try_from(event: ContractDelegationEvent) -> Result<Self, Self::Error> {
         match event {
             ContractDelegationEvent::Delegate(delegation) => {
-                let result = DelegationEvent::Delegate(delegation.try_into()?);
-                Ok(result)
+                let amount: MajorCurrencyAmount = delegation.amount.try_into()?;
+                Ok(DelegationEvent {
+                    kind: DelegationEventKind::Delegate,
+                    block_height: delegation.block_height,
+                    address: delegation.owner.into_string(),
+                    node_identity: delegation.node_identity.to_string(),
+                    amount: Some(amount),
+                })
             }
-            ContractDelegationEvent::Undelegate(pending_undelegate) => {
-                let result = DelegationEvent::Undelegate(pending_undelegate.into());
-                Ok(result)
-            }
+            ContractDelegationEvent::Undelegate(pending_undelegate) => Ok(DelegationEvent {
+                kind: DelegationEventKind::Delegate,
+                block_height: pending_undelegate.block_height(),
+                address: pending_undelegate.delegate().into_string(),
+                node_identity: pending_undelegate.mix_identity().to_string(),
+                amount: None,
+            }),
         }
     }
 }

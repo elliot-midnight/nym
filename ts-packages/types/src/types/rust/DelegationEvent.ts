@@ -1,4 +1,10 @@
-import type { DelegationResult } from './DelegationResult';
-import type { PendingUndelegate } from './PendingUndelegate';
+import type { DelegationEventKind } from './DelegationEventKind';
+import type { MajorCurrencyAmount } from './Currency';
 
-export type DelegationEvent = { Delegate: DelegationResult } | { Undelegate: PendingUndelegate };
+export interface DelegationEvent {
+  kind: DelegationEventKind;
+  node_identity: string;
+  address: string;
+  amount: MajorCurrencyAmount | null;
+  block_height: bigint;
+}
